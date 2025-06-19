@@ -1,0 +1,150 @@
+# GitIgnore for .NET 8 Web API and Next.js Front End
+
+# -----------------------------------------------------------------------------
+# Visual Studio / .NET Specific Files
+# -----------------------------------------------------------------------------
+
+## Build Results ##
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.suo
+*.user
+*.pdb
+*.tmp
+*.log
+*.vspscc
+*.vssscc
+*.buildscc
+*.pidb
+*.booproj
+*.webinfo
+*.aps
+*.manifest
+_UpgradeReport_Files/
+.idea/
+
+## Packages ##
+packages/
+*.nupkg
+*.snupkg
+*.so
+*.o
+*.obj
+*.dll
+*.exe
+
+## Solution and Project Files ##
+*.csproj.user
+*.vcxproj.user
+*.vbproj.user
+*.sln.docstates
+
+## Resharper and other JetBrains files ##
+.vs/
+*.dotCover
+*.resharper
+*.resharper.user
+*.resharper.host
+_ReSharper.*/
+[Tt]humbs.db
+[Dd]esktop.ini
+
+## Editorconfig and StyleCop ##
+*.DotSettings
+*.userprefs
+
+## Rider ##
+.idea/
+.DS_Store
+
+## Visual Studio Code ##
+.vscode/
+
+# -----------------------------------------------------------------------------
+# Next.js / Node.js Specific Files
+# -----------------------------------------------------------------------------
+
+## Dependencies ##
+node_modules/
+.pnp/
+.pnp.js
+
+## Testing ##
+/coverage
+.nyc_output
+
+## Production ##
+/build
+/dist
+
+## Linting ##
+.eslintcache
+
+## Local Dotenv ##
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+## Other ##
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+.cache
+.env
+.DS_Store
+
+# -----------------------------------------------------------------------------
+# Operating System & Other General Ignored Files
+# -----------------------------------------------------------------------------
+
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# MacOS
+.Trashes
+._*
+
+# Windows
+*.~
+*.bak
+*.old
+*.obj
+*.lib
+*.exp
+*.ilk
+*.aps
+*.pch
+*.pdb
+*.idb
+*.sbr
+*.bsc
+*.res
+*.ncb
+*.vcproj.*.filters
+*.vcproj.*.user
+*.vcproj.*.wrk
+*.vcproj.*.web
+
+# Logs
+*.log
+logs/
+*.txt
+
+# IDE-specific files (e.g., VS Code, Sublime Text)
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary files
+*~
+*.swp
+*.swo
+*.tmp
+temp/
