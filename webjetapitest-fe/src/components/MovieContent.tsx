@@ -2,51 +2,90 @@ import { Container } from "@mui/material";
 import MovieList from "./MovieList";
 import MovieDetails from "./MovieDetails";
 import { useEffect, useState } from "react";
-import type { MovieListItemModel } from "./models";
+import type { MovieListItemModel, MovieListResponse, ProviderState } from "./models";
 import { mergeList } from "./utils";
+import { ProviderStateContext } from "./contexts";
 
-const provider1 = new Promise<MovieListItemModel[]>((resolve) => {
+interface ProviderListRequest {
+	providerId: string,
+	request: Promise<MovieListResponse>,
+	providerState: ProviderState,
+	setProviderState: React.Dispatch<React.SetStateAction<ProviderState>>
+}
+
+const FAKE_fetchCinemaworld = new Promise<MovieListResponse>((resolve) => {
 	setTimeout(() => {
-		resolve([
-			{ movieId: "test1", title: "test1", releaseYear: 2001, providerIds: ["1"] },
-			{ movieId: "test2", title: "test2", releaseYear: 2002, providerIds: ["1"] },
-			{ movieId: "test3", title: "test3", releaseYear: 2003, providerIds: ["1"] },
-			{ movieId: "test4", title: "test4", releaseYear: 2004, providerIds: ["1"] },
-			{ movieId: "test5", title: "test5", releaseYear: 2005, providerIds: ["1"] },
-		])
-	}, 20000)
+		resolve(
+			{
+				providerId: "Cinemaworld", 
+				movieList: [
+					{ movieId: "test1", title: "test1", releaseYear: 2001, providerIds: ["Cinemaworld"] },
+					{ movieId: "test2", title: "test2", releaseYear: 2002, providerIds: ["Cinemaworld"] },
+					{ movieId: "test3", title: "test3", releaseYear: 2003, providerIds: ["Cinemaworld"] },
+					{ movieId: "test4", title: "test4", releaseYear: 2004, providerIds: ["Cinemaworld"] },
+					{ movieId: "test5", title: "test5", releaseYear: 2005, providerIds: ["Cinemaworld"] },
+				]
+			}
+		)
+	}, 2000)
 });
-const provider2 = new Promise<MovieListItemModel[]>((resolve) => {
+
+const FAKE_fetchFilmworld = new Promise<MovieListResponse>((resolve) => {
 	setTimeout(() => {
-		resolve([
-			{ movieId: "test4", title: "test4", releaseYear: 2004, providerIds: ["2"] },
-			{ movieId: "test5", title: "test5", releaseYear: 2005, providerIds: ["2"] },
-			{ movieId: "test6", title: "test6", releaseYear: 2006, providerIds: ["2"] },
-			{ movieId: "test7", title: "test7", releaseYear: 2007, providerIds: ["2"] },
-			{ movieId: "test8", title: "test8", releaseYear: 2008, providerIds: ["2"] },
-		])
-	}, 10000)
+		resolve(
+			{
+				providerId: "Filmworld", 
+				movieList: [
+					{ movieId: "test4", title: "test4", releaseYear: 2004, providerIds: ["Filmworld"] },
+					{ movieId: "test5", title: "test5", releaseYear: 2005, providerIds: ["Filmworld"] },
+					{ movieId: "test6", title: "test6", releaseYear: 2006, providerIds: ["Filmworld"] },
+					{ movieId: "test7", title: "test7", releaseYear: 2007, providerIds: ["Filmworld"] },
+					{ movieId: "test8", title: "test8", releaseYear: 2008, providerIds: ["Filmworld"] },
+				]
+			}
+		)
+	}, 1000)
 });
+
+function useProviderRequest(providerId: string, request: Promise<MovieListResponse>): ProviderListRequest {
+	const [providerState, setProviderState] = useState<ProviderState>("loading");
+	return {
+		providerId,
+		request,
+		providerState,
+		setProviderState
+	}
+}
 
 function MovieContent() {
-	const [providerResponses, setProviderResponses] = useState<Promise<MovieListItemModel[]>[]>([provider1, provider2]);
-	const [movieDetailsId, setMovieDetailsId] = useState<string | null>(null);
-	const [movieList, setMovieList] = useState<MovieListItemModel[]>([]);
-	const [loadingList, setLoadingList] = useState(true);
+	// request promise as state for incremental loading
+	const cinemaworldRequest = useProviderRequest("Cinemaworld", FAKE_fetchCinemaworld);
+	const filmworldRequest = useProviderRequest("Filmworld", FAKE_fetchFilmworld);
+	const [unresolvedProviderRequests, setUnresolvedProviderRequests] = useState<ProviderListRequest[]>([cinemaworldRequest, filmworldRequest]);
 
-	// derived state
-	const areDetailsOpen = movieDetailsId !== null;
+	// movie list as state
+	const [movieList, setMovieList] = useState<MovieListItemModel[]>([]);
+	const [selectedMovieListItem, setSelectedMovieListItem] = useState<MovieListItemModel | null>(null);
+
+	// derived state (handled outside of tsx for readability)
+	const loadingList = cinemaworldRequest.providerState != "loaded" && filmworldRequest.providerState != "loaded";
 
 	useEffect(() => {
 		const fetchMovieList = async () => {
-			const firstResolved = Promise.any(providerResponses);
+			const firstResolved = Promise.any(unresolvedProviderRequests.map(x => x.request));
 			try {
-				const movies = await firstResolved;
-				setLoadingList(false);
-				setMovieList(mergeList(movieList, movies));
+				const response = await firstResolved;
+				const providerRequest = unresolvedProviderRequests.find(x => x.providerId === response.providerId);
+				providerRequest?.setProviderState("loaded");
+				setUnresolvedProviderRequests(unresolvedProviderRequests.filter(x => x.providerId !== response.providerId))
+				setMovieList(mergeList(movieList, response.movieList));
 			}
-			finally {
-				setProviderResponses(providerResponses.filter(x => x != firstResolved));
+			catch(ex) {
+				if (ex instanceof AggregateError && unresolvedProviderRequests.length > 0) {
+					// Promise.any() will only return an AggregateError if all promises are rejected so this is safe to do
+					unresolvedProviderRequests.forEach(x => x.setProviderState("errored"));
+					setUnresolvedProviderRequests([]);
+				}
 			}
 		};
 		fetchMovieList();
@@ -54,8 +93,17 @@ function MovieContent() {
 	
 	return (
 		<Container>
-			<MovieList setMovieDetailsId={setMovieDetailsId} loadingList={loadingList} movieList={movieList} />
-			<MovieDetails detailsOpen={areDetailsOpen} closeMovieDetails={() => setMovieDetailsId(null)} />
+			<ProviderStateContext value={{cinemaworldStatus: cinemaworldRequest.providerState, filmworldStatus: filmworldRequest.providerState}}>
+				<MovieList 
+					movieListItems={movieList} 
+					setSelectedMovieListItem={setSelectedMovieListItem} 
+					loadingList={loadingList}
+				/>
+			</ProviderStateContext>
+			<MovieDetails 
+				selectedMovieListItem={selectedMovieListItem} 
+				closeMovieDetails={() => setSelectedMovieListItem(null)} 
+			/>
 		</Container>
 	)
 }

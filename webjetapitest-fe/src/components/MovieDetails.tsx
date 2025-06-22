@@ -2,22 +2,24 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Table
 import MovieIcon from '@mui/icons-material/Movie';
 import PublicIcon from '@mui/icons-material/Public';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import type { MovieListItemModel } from "./models";
 
 export interface MovieDetailsProps {
-	detailsOpen: boolean;
-	closeMovieDetails: () => void
+	closeMovieDetails: () => void,
+  selectedMovieListItem: MovieListItemModel | null
 }
 
 function MovieDetails(props: MovieDetailsProps) {
+  const areDetailsOpen = props.selectedMovieListItem !== null;
 	return (
 	  <Dialog
         fullWidth={true}
-        open={props.detailsOpen}
+        open={areDetailsOpen}
         onClose={props.closeMovieDetails}
         aria-labelledby="responsive-dialog-title"
       >
         <DialogTitle id="responsive-dialog-title">
-          {"Movie Title"}
+          {props.selectedMovieListItem?.title}
         </DialogTitle>
         <DialogContent>
           <TableContainer component={Paper}>

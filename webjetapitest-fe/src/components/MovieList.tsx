@@ -4,20 +4,26 @@ import MovieListItemSkeleton from "./MovieListItemSkeleton";
 import type { MovieListItemModel } from './models';
 
 export interface MovieListProps {
-	setMovieDetailsId: (id: string | null) => void,
+	setSelectedMovieListItem: (id: MovieListItemModel | null) => void,
 	loadingList: boolean,
-	movieList: MovieListItemModel[]
+	movieListItems: MovieListItemModel[]
 }
 
 function MovieList(props: MovieListProps) {
+	const skeletonCount = 15;
 	return (
 		<TableContainer component={Paper}>
 			<Table aria-label="simple table">
 				<TableBody>
-					{!props.loadingList && props.movieList.map((model) => (
-						<MovieListItem key={model.movieId} movieListItemModel={model} setMovieDetailsId={props.setMovieDetailsId} />	
+					{!props.loadingList && props.movieListItems.map((model) => (
+						<MovieListItem 
+							key={model.movieId} 
+							movieListItemModel={model} 
+							setSelectedMovieListItem={props.setSelectedMovieListItem} 
+							
+						/>	
 					))}
-					{props.loadingList && [...Array(10).keys()].map((index) => (
+					{props.loadingList && [...Array(skeletonCount).keys()].map((index) => (
 						<MovieListItemSkeleton key={index} />
 					))}
 					
