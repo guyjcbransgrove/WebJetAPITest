@@ -6,7 +6,7 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { useContext, type ReactNode } from "react";
 import type { MovieListItemModel, MovieListResponse, ProviderId, ProviderState } from "./models";
 import { ProviderStateContext } from "./contexts";
-import { FAKE_fetchCinemaworld, FAKE_fetchFilmworld } from "./api";
+import { FAKE_fetchCinemaworldList, FAKE_fetchFilmworldList } from "./api";
 
 export interface MovieListItemProps {
 	setSelectedMovieListItem: (detailId: MovieListItemModel | null) => void,
@@ -31,13 +31,13 @@ function MovieListItem(props: MovieListItemProps) {
 					state={providerStates.cinemaworldStatus} 
 					showDisabled={!cinemaWorldEnabled} 
 					iconComponent={<PublicIcon />}
-					refreshFailedProvider={() => props.refreshFailedProvider("Cinemaworld", FAKE_fetchCinemaworld())}
+					refreshFailedProvider={() => props.refreshFailedProvider("Cinemaworld", FAKE_fetchCinemaworldList())}
 				/>
 				<StateAppropriateIcon 
 					state={providerStates.filmworldStatus} 
 					showDisabled={!filmWorldEnabled} 
 					iconComponent={<MovieIcon />}
-					refreshFailedProvider={() => props.refreshFailedProvider("Filmworld", FAKE_fetchFilmworld())}
+					refreshFailedProvider={() => props.refreshFailedProvider("Filmworld", FAKE_fetchFilmworldList())}
 				/>
 				<StyledIconButton iconComponent={<CompareArrowsIcon />} onClick={() => props.setSelectedMovieListItem(props.movieListItemModel)}  />
 			</TableCell>

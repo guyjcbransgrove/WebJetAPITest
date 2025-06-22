@@ -6,8 +6,24 @@ export interface MovieListItemModel {
 }
 
 export interface MovieListResponse {
-	providerId: string,
+	providerId: ProviderId,
 	movieList: MovieListItemModel[]
+}
+
+export interface MovieDetailModel {
+	priceInDollars: number;
+}
+
+export interface MovieDetailsResponse {
+	providerId: ProviderId;
+	movieDetails: MovieDetailModel;
+}
+
+export interface ProviderRequest<T> {
+	providerId: string,
+	request: Promise<T>,
+	providerState: ProviderState,
+	setProviderState: React.Dispatch<React.SetStateAction<ProviderState>>
 }
 
 export type ProviderState = "loading" | "errored" | "loaded";

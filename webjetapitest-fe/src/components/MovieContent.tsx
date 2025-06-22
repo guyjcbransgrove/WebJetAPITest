@@ -2,34 +2,18 @@ import { Container, Snackbar } from "@mui/material";
 import MovieList from "./MovieList";
 import MovieDetails from "./MovieDetails";
 import { useEffect, useState } from "react";
-import type { MovieListItemModel, MovieListResponse, ProviderId, ProviderState } from "./models";
+import type { MovieListItemModel, MovieListResponse, ProviderId, ProviderRequest } from "./models";
 import { mergeList } from "./utils";
 import { ProviderStateContext } from "./contexts";
-import { FAKE_fetchCinemaworld, FAKE_fetchFilmworld } from "./api";
-
-interface ProviderListRequest {
-	providerId: string,
-	request: Promise<MovieListResponse>,
-	providerState: ProviderState,
-	setProviderState: React.Dispatch<React.SetStateAction<ProviderState>>
-}
-
-function useProviderRequest(providerId: ProviderId, request: Promise<MovieListResponse>): ProviderListRequest {
-	const [providerState, setProviderState] = useState<ProviderState>("loading");
-	return {
-		providerId,
-		request,
-		providerState,
-		setProviderState
-	}
-}
+import { FAKE_fetchCinemaworldList, FAKE_fetchFilmworldList } from "./api";
+import { useProviderRequest } from "./hooks";
 
 function MovieContent() {
 	// request promise as state for incremental loading
-	const cinemaworldRequest = useProviderRequest("Cinemaworld", FAKE_fetchCinemaworld());
-	const filmworldRequest = useProviderRequest("Filmworld", FAKE_fetchFilmworld());
+	const cinemaworldRequest = useProviderRequest("Cinemaworld", FAKE_fetchCinemaworldList());
+	const filmworldRequest = useProviderRequest("Filmworld", FAKE_fetchFilmworldList());
 	const allProviderRequests = [cinemaworldRequest, filmworldRequest];
-	const [unresolvedProviderRequests, setUnresolvedProviderRequests] = useState<ProviderListRequest[]>([cinemaworldRequest, filmworldRequest]);
+	const [unresolvedProviderRequests, setUnresolvedProviderRequests] = useState<ProviderRequest<MovieListResponse>[]>(allProviderRequests);
 
 	// movie list as state
 	const [movieList, setMovieList] = useState<MovieListItemModel[]>([]);
@@ -80,10 +64,12 @@ function MovieContent() {
 					refreshFailedProvider={refreshFailedProvider}
 				/>
 			</ProviderStateContext>
-			<MovieDetails 
-				selectedMovieListItem={selectedMovieListItem} 
-				closeMovieDetails={() => setSelectedMovieListItem(null)} 
-			/>
+			{selectedMovieListItem !== null && 
+				<MovieDetails 
+					selectedMovieListItem={selectedMovieListItem} 
+					closeMovieDetails={() => setSelectedMovieListItem(null)} 
+				/>
+			}
 			<Snackbar 
 				open={erroredProvider !== undefined && !allProvidersErrored}
 				message="A provider has errored. Click on the ! icon to re-attempt it."

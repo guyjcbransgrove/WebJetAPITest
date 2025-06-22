@@ -1,6 +1,6 @@
-import type { MovieListResponse } from "./models";
+import type { MovieDetailsResponse, MovieListResponse } from "./models";
 
-export const FAKE_fetchCinemaworld = () => new Promise<MovieListResponse>((resolve, reject) => {
+export const FAKE_fetchCinemaworldList = () => new Promise<MovieListResponse>((resolve, reject) => {
 	setTimeout(() => {
 		if (Math.random() * 100 > 99) reject();
 		resolve(
@@ -15,10 +15,10 @@ export const FAKE_fetchCinemaworld = () => new Promise<MovieListResponse>((resol
 				]
 			}
 		)
-	}, 2000)
+	}, Math.random() * 10000)
 });
 
-export const FAKE_fetchFilmworld = () => new Promise<MovieListResponse>((resolve, reject) => {
+export const FAKE_fetchFilmworldList = () => new Promise<MovieListResponse>((resolve, reject) => {
 	setTimeout(() => {
 		if (Math.random() * 100 > 99) reject();
 		resolve(
@@ -33,5 +33,29 @@ export const FAKE_fetchFilmworld = () => new Promise<MovieListResponse>((resolve
 				]
 			}
 		)
-	}, 1000)
+	}, Math.random() * 10000)
+});
+
+export const FAKE_fetchFilmWorldDetails = () => new Promise<MovieDetailsResponse>((resolve, reject) => {
+	setTimeout(() => {
+		if (Math.random() * 100 > 99) reject();
+		resolve(
+			{
+				providerId: "Filmworld", 
+				movieDetails: { priceInDollars: 100 }
+			}
+		)
+	}, Math.random() * 10000)
+});
+
+export const FAKE_fetchCinemaWorldDetails = () => new Promise<MovieDetailsResponse>((resolve, reject) => {
+	setTimeout(() => {
+		if (Math.random() * 100 > 99) reject();
+		resolve(
+			{
+				providerId: "Cinemaworld", 
+				movieDetails: { priceInDollars: 50 }
+			}
+		)
+	}, Math.random() * 10000)
 });
