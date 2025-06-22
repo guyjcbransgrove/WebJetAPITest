@@ -1,10 +1,11 @@
-import { Container } from "@mui/material";
+import { Container, Snackbar } from "@mui/material";
 import MovieList from "./MovieList";
 import MovieDetails from "./MovieDetails";
 import { useEffect, useState } from "react";
-import type { MovieListItemModel, MovieListResponse, ProviderState } from "./models";
+import type { MovieListItemModel, MovieListResponse, ProviderId, ProviderState } from "./models";
 import { mergeList } from "./utils";
 import { ProviderStateContext } from "./contexts";
+import { FAKE_fetchCinemaworld, FAKE_fetchFilmworld } from "./api";
 
 interface ProviderListRequest {
 	providerId: string,
@@ -13,41 +14,7 @@ interface ProviderListRequest {
 	setProviderState: React.Dispatch<React.SetStateAction<ProviderState>>
 }
 
-const FAKE_fetchCinemaworld = new Promise<MovieListResponse>((resolve) => {
-	setTimeout(() => {
-		resolve(
-			{
-				providerId: "Cinemaworld", 
-				movieList: [
-					{ movieId: "test1", title: "test1", releaseYear: 2001, providerIds: ["Cinemaworld"] },
-					{ movieId: "test2", title: "test2", releaseYear: 2002, providerIds: ["Cinemaworld"] },
-					{ movieId: "test3", title: "test3", releaseYear: 2003, providerIds: ["Cinemaworld"] },
-					{ movieId: "test4", title: "test4", releaseYear: 2004, providerIds: ["Cinemaworld"] },
-					{ movieId: "test5", title: "test5", releaseYear: 2005, providerIds: ["Cinemaworld"] },
-				]
-			}
-		)
-	}, 2000)
-});
-
-const FAKE_fetchFilmworld = new Promise<MovieListResponse>((resolve) => {
-	setTimeout(() => {
-		resolve(
-			{
-				providerId: "Filmworld", 
-				movieList: [
-					{ movieId: "test4", title: "test4", releaseYear: 2004, providerIds: ["Filmworld"] },
-					{ movieId: "test5", title: "test5", releaseYear: 2005, providerIds: ["Filmworld"] },
-					{ movieId: "test6", title: "test6", releaseYear: 2006, providerIds: ["Filmworld"] },
-					{ movieId: "test7", title: "test7", releaseYear: 2007, providerIds: ["Filmworld"] },
-					{ movieId: "test8", title: "test8", releaseYear: 2008, providerIds: ["Filmworld"] },
-				]
-			}
-		)
-	}, 1000)
-});
-
-function useProviderRequest(providerId: string, request: Promise<MovieListResponse>): ProviderListRequest {
+function useProviderRequest(providerId: ProviderId, request: Promise<MovieListResponse>): ProviderListRequest {
 	const [providerState, setProviderState] = useState<ProviderState>("loading");
 	return {
 		providerId,
@@ -59,8 +26,9 @@ function useProviderRequest(providerId: string, request: Promise<MovieListRespon
 
 function MovieContent() {
 	// request promise as state for incremental loading
-	const cinemaworldRequest = useProviderRequest("Cinemaworld", FAKE_fetchCinemaworld);
-	const filmworldRequest = useProviderRequest("Filmworld", FAKE_fetchFilmworld);
+	const cinemaworldRequest = useProviderRequest("Cinemaworld", FAKE_fetchCinemaworld());
+	const filmworldRequest = useProviderRequest("Filmworld", FAKE_fetchFilmworld());
+	const allProviderRequests = [cinemaworldRequest, filmworldRequest];
 	const [unresolvedProviderRequests, setUnresolvedProviderRequests] = useState<ProviderListRequest[]>([cinemaworldRequest, filmworldRequest]);
 
 	// movie list as state
@@ -68,7 +36,18 @@ function MovieContent() {
 	const [selectedMovieListItem, setSelectedMovieListItem] = useState<MovieListItemModel | null>(null);
 
 	// derived state (handled outside of tsx for readability)
-	const loadingList = cinemaworldRequest.providerState != "loaded" && filmworldRequest.providerState != "loaded";
+	const loadingList = !allProviderRequests.some(x => x.providerState === "loaded");
+	const erroredProvider = allProviderRequests.find(x => x.providerState === "errored");
+	const allProvidersErrored = allProviderRequests.every(x => x.providerState === "errored");
+
+	// if a provider ever completely fails we set a new request, set it back to "loading" and put it back into unresolved state
+	const refreshFailedProvider = (providerId: ProviderId, request: Promise<MovieListResponse>) => {
+		const providerRequest = allProviderRequests.find(x => x.providerId === providerId);
+		if (!providerRequest) return;
+		providerRequest.request = request;
+		providerRequest.setProviderState("loading");
+		setUnresolvedProviderRequests([providerRequest]);
+	};
 
 	useEffect(() => {
 		const fetchMovieList = async () => {
@@ -98,11 +77,20 @@ function MovieContent() {
 					movieListItems={movieList} 
 					setSelectedMovieListItem={setSelectedMovieListItem} 
 					loadingList={loadingList}
+					refreshFailedProvider={refreshFailedProvider}
 				/>
 			</ProviderStateContext>
 			<MovieDetails 
 				selectedMovieListItem={selectedMovieListItem} 
 				closeMovieDetails={() => setSelectedMovieListItem(null)} 
+			/>
+			<Snackbar 
+				open={erroredProvider !== undefined && !allProvidersErrored}
+				message="A provider has errored. Click on the ! icon to re-attempt it."
+			/>
+			<Snackbar 
+				open={allProvidersErrored}
+				message="All providers have errored. Please refresh the page."
 			/>
 		</Container>
 	)
