@@ -26,7 +26,7 @@ namespace WebJetAPITest.API.Controllers
             {
                 Constants.FilmworldProviderId => await _mediatr.Send(new FilmworldMovieListRequest(), cancellationToken),
                 Constants.CinemaworldProviderId => await _mediatr.Send(new CinemaworldMovieListRequest(), cancellationToken),
-                _ => throw new Exception()
+                _ => throw new ProviderNotFoundException()
             };
             return Ok(response);
         }
@@ -38,7 +38,7 @@ namespace WebJetAPITest.API.Controllers
             {
                 Constants.FilmworldProviderId => await _mediatr.Send(new FilmworldMovieDetailRequest(movieId), cancellationToken),
                 Constants.CinemaworldProviderId => await _mediatr.Send(new CinemaworldMovieDetailRequest(movieId), cancellationToken),
-                _ => throw new Exception()
+                _ => throw new ProviderNotFoundException()
             };
 
             return Ok(response);

@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Extensions.Http;
 using System.Reflection;
+using WebJetAPITest.API;
 using WebJetAPITest.API.RequestHandlers.HttpClients;
 
 static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
@@ -52,6 +53,8 @@ builder.Services.AddCors(options =>
                       });
 });
 
+// builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -62,6 +65,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontEnd");
+
+// app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 
