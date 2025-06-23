@@ -1,13 +1,13 @@
 import { Paper, Table, TableBody, TableContainer } from "@mui/material";
 import MovieListItem from "./MovieListItem";
 import MovieListItemSkeleton from "./MovieListItemSkeleton";
-import type { MovieListItemModel, MovieListResponse, ProviderId } from './models';
+import type { MovieListItemModel, ProviderId } from '../../tools/models';
 
 export interface MovieListProps {
 	setSelectedMovieListItem: (id: MovieListItemModel | null) => void,
 	loadingList: boolean,
 	movieListItems: MovieListItemModel[],
-	refreshFailedProvider: (providerId: ProviderId, request: Promise<MovieListResponse>) => void
+	refreshFailedProvider: (providerId: ProviderId) => void
 }
 
 function MovieList(props: MovieListProps) {
@@ -18,7 +18,7 @@ function MovieList(props: MovieListProps) {
 				<TableBody>
 					{!props.loadingList && props.movieListItems.map((model) => (
 						<MovieListItem 
-							key={model.movieId} 
+							key={model.title} 
 							movieListItemModel={model} 
 							setSelectedMovieListItem={props.setSelectedMovieListItem} 
 							refreshFailedProvider={props.refreshFailedProvider}

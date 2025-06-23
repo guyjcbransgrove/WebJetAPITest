@@ -1,17 +1,17 @@
 import { Container, Snackbar } from "@mui/material";
-import MovieList from "./MovieList";
-import MovieDetails from "./MovieDetails";
+import MovieList from "./MovieList/MovieList";
+import MovieDetails from "./MovieDetails/MovieDetails";
 import { useEffect, useState } from "react";
-import type { MovieListItemModel, MovieListResponse, ProviderId, ProviderRequest } from "./models";
-import { mergeList } from "./utils";
-import { ProviderStateContext } from "./contexts";
-import { FAKE_fetchCinemaworldList, FAKE_fetchFilmworldList } from "./api";
-import { useProviderRequest } from "./hooks";
+import type { MovieListItemModel, MovieListResponse, ProviderId, ProviderRequest } from "../tools/models";
+import { mergeList } from "../tools/utils";
+import { ProviderStateContext } from "../tools/contexts";
+import { fetchCinemaworldList, fetchFilmworldList } from "../tools/api";
+import { useProviderRequest } from "../tools/hooks";
 
 function MovieContent() {
 	// request promise as state for incremental loading
-	const cinemaworldRequest = useProviderRequest("Cinemaworld", FAKE_fetchCinemaworldList());
-	const filmworldRequest = useProviderRequest("Filmworld", FAKE_fetchFilmworldList());
+	const cinemaworldRequest = useProviderRequest("Cinemaworld", fetchCinemaworldList);
+	const filmworldRequest = useProviderRequest("Filmworld", fetchFilmworldList);
 	const allProviderRequests = [cinemaworldRequest, filmworldRequest];
 	const [unresolvedProviderRequests, setUnresolvedProviderRequests] = useState<ProviderRequest<MovieListResponse>[]>(allProviderRequests);
 
@@ -24,18 +24,18 @@ function MovieContent() {
 	const erroredProvider = allProviderRequests.find(x => x.providerState === "errored");
 	const allProvidersErrored = allProviderRequests.every(x => x.providerState === "errored");
 
-	// if a provider ever completely fails we set a new request, set it back to "loading" and put it back into unresolved state
-	const refreshFailedProvider = (providerId: ProviderId, request: Promise<MovieListResponse>) => {
+	// if a provider ever completely fails the user can set it back to "loading" and put it back into unresolved state
+	const refreshFailedProvider = (providerId: ProviderId) => {
 		const providerRequest = allProviderRequests.find(x => x.providerId === providerId);
 		if (!providerRequest) return;
-		providerRequest.request = request;
 		providerRequest.setProviderState("loading");
 		setUnresolvedProviderRequests([providerRequest]);
 	};
 
 	useEffect(() => {
 		const fetchMovieList = async () => {
-			const firstResolved = Promise.any(unresolvedProviderRequests.map(x => x.request));
+			
+			const firstResolved = Promise.any(unresolvedProviderRequests.map(x => x.request()));
 			try {
 				const response = await firstResolved;
 				const providerRequest = unresolvedProviderRequests.find(x => x.providerId === response.providerId);
@@ -52,7 +52,7 @@ function MovieContent() {
 			}
 		};
 		fetchMovieList();
-	});
+	}, [unresolvedProviderRequests]);
 	
 	return (
 		<Container>

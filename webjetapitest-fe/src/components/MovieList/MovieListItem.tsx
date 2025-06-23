@@ -1,17 +1,17 @@
-import { IconButton, Skeleton, TableCell, TableRow } from "@mui/material";
+import { Skeleton, TableCell, TableRow } from "@mui/material";
 import MovieIcon from '@mui/icons-material/Movie';
 import PublicIcon from '@mui/icons-material/Public';
 import ErrorIcon from '@mui/icons-material/Error';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { useContext, type ReactNode } from "react";
-import type { MovieListItemModel, MovieListResponse, ProviderId, ProviderState } from "./models";
-import { ProviderStateContext } from "./contexts";
-import { FAKE_fetchCinemaworldList, FAKE_fetchFilmworldList } from "./api";
+import type { MovieListItemModel, ProviderId, ProviderState } from "../../tools/models";
+import { ProviderStateContext } from "../../tools/contexts";
+import { StyledIconButton } from "../StyledIconButton";
 
 export interface MovieListItemProps {
 	setSelectedMovieListItem: (detailId: MovieListItemModel | null) => void,
 	movieListItemModel: MovieListItemModel;
-	refreshFailedProvider: (providerId: ProviderId, request: Promise<MovieListResponse>) => void
+	refreshFailedProvider: (providerId: ProviderId) => void
 }
 
 function MovieListItem(props: MovieListItemProps) {
@@ -24,40 +24,24 @@ function MovieListItem(props: MovieListItemProps) {
 			sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
 		>
 			<TableCell size="medium" component="th" scope="row">
-				{props.movieListItemModel.title}{'(' + props.movieListItemModel.releaseYear + ')'}
+				{props.movieListItemModel.title}{'(' + props.movieListItemModel.year + ')'}
 			</TableCell>
 			<TableCell size="small" align="right">
 				<StateAppropriateIcon 
 					state={providerStates.cinemaworldStatus} 
 					showDisabled={!cinemaWorldEnabled} 
 					iconComponent={<PublicIcon />}
-					refreshFailedProvider={() => props.refreshFailedProvider("Cinemaworld", FAKE_fetchCinemaworldList())}
+					refreshFailedProvider={() => props.refreshFailedProvider("Cinemaworld")}
 				/>
 				<StateAppropriateIcon 
 					state={providerStates.filmworldStatus} 
 					showDisabled={!filmWorldEnabled} 
 					iconComponent={<MovieIcon />}
-					refreshFailedProvider={() => props.refreshFailedProvider("Filmworld", FAKE_fetchFilmworldList())}
+					refreshFailedProvider={() => props.refreshFailedProvider("Filmworld")}
 				/>
 				<StyledIconButton iconComponent={<CompareArrowsIcon />} onClick={() => props.setSelectedMovieListItem(props.movieListItemModel)}  />
 			</TableCell>
 		</TableRow>
-	);
-}
-
-function StyledIconButton(props: {disabled?: boolean, iconComponent: ReactNode, onClick?: () => void}) {
-	return (
-		<IconButton
-			size="large"
-			edge="start"
-			color="inherit"
-			aria-label="menu"
-			sx={{ mr: 2}}
-			onClick={props.onClick}
-			disabled={props.disabled ?? false}
-		>
-			{props.iconComponent}
-		</IconButton>
 	);
 }
 

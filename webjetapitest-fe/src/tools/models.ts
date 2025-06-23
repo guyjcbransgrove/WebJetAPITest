@@ -1,7 +1,8 @@
 export interface MovieListItemModel {
-	movieId: string,
+	cwMovieId: string | null,
+	fwMovieId: string | null,
 	title: string,
-	releaseYear: number,
+	year: string,
 	providerIds: ProviderId[]
 }
 
@@ -21,7 +22,7 @@ export interface MovieDetailsResponse {
 
 export interface ProviderRequest<T> {
 	providerId: string,
-	request: Promise<T>,
+	request: () => Promise<T>,
 	providerState: ProviderState,
 	setProviderState: React.Dispatch<React.SetStateAction<ProviderState>>
 }
