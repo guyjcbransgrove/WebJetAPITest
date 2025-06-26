@@ -18,7 +18,7 @@ cd WebJetAPITest
 
 dotnet run --lauch-profile "https"
 
-NOTE: you will need to add the following appsettings.secret.json in this directory:
+NOTE: you will need to add the following appsettings.secret.json in this directory as it is required but gitignored:
 
 ```
 {
