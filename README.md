@@ -18,11 +18,13 @@ cd WebJetAPITest
 
 dotnet run --lauch-profile "https"
 
-NOTE: you will need to add the following appsettings.secrets.json in this directory:
+NOTE: you will need to add the following appsettings.secret.json in this directory:
 
+```
 {
-  "APIKey": "yourapikey"
+  "ApiKey": "YOUR_API_KEY"
 }
+```
 
 In browser navigate to http://localhost:5173/ and begin using the application
 
